@@ -12,7 +12,7 @@ on:
 
 env:
   NODE_VERSION: "20"
-  RUST_VERSION: "1.85"
+  RUST_VERSION: "1.88"
 
 jobs:
   # ── Build all platforms ────────────────────────────────────────────
