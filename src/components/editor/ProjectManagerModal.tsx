@@ -425,7 +425,7 @@ export const ProjectManagerModal: React.FC<ProjectManagerModalProps> = ({
                     <div className="flex items-center justify-between p-5">
                       <div>
                         <p className="text-sm font-medium text-red-800">
-                          Delete "{project.name}"?
+                          Delete &quot;{project.name}&quot;?
                         </p>
                         <p className="text-xs text-red-600 mt-0.5">
                           This action cannot be undone.

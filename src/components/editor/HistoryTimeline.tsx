@@ -90,7 +90,7 @@ export const HistoryTimeline: React.FC<HistoryTimelineProps> = ({
             </div>
             <div>
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">Project History</h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Version history for "{projectName}"</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Version history for &quot;{projectName}&quot;</p>
             </div>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
@@ -140,7 +140,7 @@ export const HistoryTimeline: React.FC<HistoryTimelineProps> = ({
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-1">No history yet</h3>
               <p className="text-sm text-gray-500 mb-6">
-                Save a snapshot to track your project's version history.
+                Save a snapshot to track your project&apos;s version history.
               </p>
               <button
                 onClick={handleSaveSnapshot}

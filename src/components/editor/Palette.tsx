@@ -2,10 +2,10 @@
 
 import React, { useState } from "react"
 import { useEditor, Element } from "@craftjs/core"
-import { 
+import {
   MousePointer2, 
   Type, 
-  Image, 
+  Image as ImageIcon, 
   Heading1, 
   TextCursorInput,
   LayoutGrid,
@@ -158,6 +158,7 @@ const ComponentItem: React.FC<ComponentItemProps> = React.memo(({ label, icon, c
     </div>
   )
 })
+ComponentItem.displayName = 'ComponentItem'
 
 interface ComponentGroupProps {
   title: string
@@ -199,6 +200,7 @@ const ComponentGroup: React.FC<ComponentGroupProps> = React.memo(({
     </div>
   )
 })
+ComponentGroup.displayName = 'ComponentGroup'
 
 // ── DS Component Items ──────────────────────────────────────────────
 
@@ -264,6 +266,7 @@ const DSComponentItem: React.FC<{
     </div>
   )
 })
+DSComponentItem.displayName = 'DSComponentItem'
 
 /**
  * Renders all DS components grouped by category.
@@ -465,7 +468,7 @@ export const Palette: React.FC<PaletteProps> = ({
               />
               <ComponentItem
                 label="Image"
-                icon={<Image size={18} className="text-pink-600" />}
+                icon={<ImageIcon size={18} className="text-pink-600" />}
                 component={<ImageNode />}
                 description="Image placeholder"
               />

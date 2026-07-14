@@ -39,6 +39,7 @@ export const ImageNode: UserComponent<ImageNodeProps> = ({
       )}
       onClick={(e) => e.stopPropagation()}
     >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={src}
         alt={alt}

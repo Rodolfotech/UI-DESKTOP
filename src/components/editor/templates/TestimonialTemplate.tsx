@@ -63,6 +63,7 @@ export const TestimonialTemplate: UserComponent<TestimonialTemplateProps> = ({
 
           {/* Author */}
           <div className="mt-8 flex items-center gap-4">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={avatar}
               alt={author}
