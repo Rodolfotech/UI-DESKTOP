@@ -2,7 +2,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/version-0.1.0-blue?style=flat-square" alt="Version 0.1.0" />
-  <img src="https://img.shields.io/badge/build-passing-brightgreen?style=flat-square" alt="Build Passing" />
+  <a href="https://github.com/Rodolfotech/UI-DESKTOP/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/Rodolfotech/UI-DESKTOP/build.yml?style=flat-square&label=build&logo=github" alt="Build Status" /></a>
   <img src="https://img.shields.io/badge/platform-Web%20%7C%20Desktop-8A2BE2?style=flat-square" alt="Platform: Web & Desktop" />
   <img src="https://img.shields.io/badge/license-Private-red?style=flat-square" alt="License: Private" />
   <img src="https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react" alt="React 19" />
