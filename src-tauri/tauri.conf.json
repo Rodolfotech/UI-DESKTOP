@@ -10,7 +10,6 @@
     "beforeDevCommand": "npm run dev"
   },
   "app": {
-    "title": "Proyect-UI - Visual Editor",
     "windows": [
       {
         "title": "Proyect-UI - Visual Editor",

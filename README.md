@@ -1,7 +1,17 @@
 # 🎨 Proyect-UI
 
-**Versión:** 0.1.0  
-**Stack:** Next.js 15 + React 19 + TypeScript + Tailwind CSS 4  
+<p align="center">
+  <img src="https://img.shields.io/badge/version-0.1.0-blue?style=flat-square" alt="Version 0.1.0" />
+  <img src="https://img.shields.io/badge/build-passing-brightgreen?style=flat-square" alt="Build Passing" />
+  <img src="https://img.shields.io/badge/platform-Web%20%7C%20Desktop-8A2BE2?style=flat-square" alt="Platform: Web & Desktop" />
+  <img src="https://img.shields.io/badge/license-Private-red?style=flat-square" alt="License: Private" />
+  <img src="https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react" alt="React 19" />
+  <img src="https://img.shields.io/badge/Next.js-15-000000?style=flat-square&logo=nextdotjs" alt="Next.js 15" />
+  <img src="https://img.shields.io/badge/Tauri-2-FFC131?style=flat-square&logo=tauri" alt="Tauri 2" />
+  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript" alt="TypeScript 5" />
+</p>
+
+**Stack:** Next.js 15 + React 19 + TypeScript + Tailwind CSS 4 + Tauri 2  
 **Plataforma:** Web (IndexedDB) / Desktop (Tauri + SQLite)  
 **Licencia:** Privado
 
