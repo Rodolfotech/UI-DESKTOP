@@ -1,0 +1,229 @@
+# Proyect-UI CI/CD Pipeline
+#
+# Builds and validates the project on Ubuntu (Linux) and Windows.
+# Runs type-checking, linting, production build, and Tauri desktop builds.
+
+name: Build & Validate
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  NODE_VERSION: "20"
+  RUST_VERSION: "1.85"
+
+jobs:
+  # ── Next.js build (Ubuntu) ─────────────────────────────────────────
+  build-ubuntu:
+    name: Build (Ubuntu)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build + type check (static export)
+        run: npm run build
+
+      - name: Verify output directory
+        run: |
+          if [ -d "out" ]; then
+            echo "✅ Build output exists at out/"
+            ls -la out/ | head -10
+          else
+            echo "❌ Build output missing!"
+            exit 1
+          fi
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: proyect-ui-web-ubuntu
+          path: out/
+          retention-days: 7
+          if-no-files-found: error
+
+  # ── Next.js build (Windows) ────────────────────────────────────────
+  build-windows:
+    name: Build (Windows)
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build + type check (static export)
+        run: npm run build
+
+      - name: Verify output directory
+        run: |
+          if (Test-Path "out") {
+            Write-Output "✅ Build output exists at out/"
+            Get-ChildItem -Path "out" -Name | Select-Object -First 10
+          } else {
+            Write-Output "❌ Build output missing!"
+            exit 1
+          }
+        shell: pwsh
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: proyect-ui-web-windows
+          path: out/
+          retention-days: 7
+          if-no-files-found: error
+
+  # ── Tauri desktop build (Ubuntu .deb/.AppImage) ────────────────────
+  tauri-build-ubuntu:
+    name: Tauri Desktop (Ubuntu)
+    runs-on: ubuntu-latest
+    needs: [build-ubuntu]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: Install Rust toolchain ${{ env.RUST_VERSION }}
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+
+      - name: Cache Rust build artifacts
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install system dependencies (Linux)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libwebkit2gtk-4.1-dev \
+            libgtk-3-dev \
+            libsoup-3.0-dev \
+            librsvg2-dev \
+            patchelf \
+            libappindicator3-dev
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build Next.js static export
+        run: npm run build
+
+      - name: Build Tauri desktop app
+        run: npx tauri build --bundles deb,appimage
+
+      - name: Upload Tauri bundle artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: proyect-ui-desktop-ubuntu
+          path: src-tauri/target/release/bundle/
+          retention-days: 14
+          if-no-files-found: error
+
+  # ── Tauri desktop build (Windows .msi) ─────────────────────────────
+  tauri-build-windows:
+    name: Tauri Desktop (Windows)
+    runs-on: windows-latest
+    needs: [build-windows]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: Install Rust toolchain ${{ env.RUST_VERSION }}
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+
+      - name: Cache Rust build artifacts
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build Next.js static export
+        run: npm run build
+
+      - name: Build Tauri desktop app
+        run: npx tauri build --bundles msi
+
+      - name: Upload Tauri bundle artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: proyect-ui-desktop-windows
+          path: src-tauri/target/release/bundle/
+          retention-days: 14
+          if-no-files-found: error
+
+  # ── Build Summary ──────────────────────────────────────────────────
+  summary:
+    name: Build Summary
+    runs-on: ubuntu-latest
+    needs: [build-ubuntu, build-windows, tauri-build-ubuntu, tauri-build-windows]
+    if: always()
+
+    steps:
+      - name: Check build results
+        run: |
+          echo "## 📦 Proyect-UI Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Platform | Web Export | Desktop Bundle |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|------------|----------------|" >> $GITHUB_STEP_SUMMARY
+          echo "| 🐧 Ubuntu | ${{ needs.build-ubuntu.result }} | ${{ needs.tauri-build-ubuntu.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🪟 Windows | ${{ needs.build-windows.result }} | ${{ needs.tauri-build-windows.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ needs.build-ubuntu.result }}" = "success" ] \
+             && [ "${{ needs.build-windows.result }}" = "success" ] \
+             && [ "${{ needs.tauri-build-ubuntu.result }}" = "success" ] \
+             && [ "${{ needs.tauri-build-windows.result }}" = "success" ]; then
+            echo "✅ **All builds completed successfully!**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **Some builds failed. Check the job logs for details.**" >> $GITHUB_STEP_SUMMARY
+          fi

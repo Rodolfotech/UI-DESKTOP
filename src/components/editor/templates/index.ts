@@ -1,0 +1,11 @@
+export { HeroTemplate, HeroTemplateSettings } from "./HeroTemplate"
+export { PricingTemplate, PricingTemplateSettings } from "./PricingTemplate"
+export { FooterTemplate, FooterTemplateSettings } from "./FooterTemplate"
+export { FeaturesGrid, FeaturesGridSettings } from "./FeaturesGrid"
+export { TestimonialTemplate, TestimonialTemplateSettings } from "./TestimonialTemplate"
+
+export type { HeroTemplateProps } from "./HeroTemplate"
+export type { PricingTemplateProps } from "./PricingTemplate"
+export type { FooterTemplateProps } from "./FooterTemplate"
+export type { FeaturesGridProps } from "./FeaturesGrid"
+export type { TestimonialTemplateProps } from "./TestimonialTemplate"
