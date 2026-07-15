@@ -245,8 +245,8 @@ export function useDexieDB(): UseDexieDBReturn {
         if (parsed.type === "proyect-ui-project" && parsed.project) {
           const { name, description, tags, structure } = parsed.project
           return createProject(
-            structure || "",
             name || "Imported Project",
+            structure || "",
             description || "",
             tags || ""
           )
@@ -256,8 +256,8 @@ export function useDexieDB(): UseDexieDBReturn {
           let lastId: number | null = null
           for (const proj of parsed.projects) {
             lastId = await createProject(
-              proj.structure || "",
               proj.name || "Imported Project",
+              proj.structure || "",
               proj.description || "",
               proj.tags || ""
             )

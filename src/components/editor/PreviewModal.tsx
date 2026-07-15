@@ -4,30 +4,7 @@ import React, { useEffect, useState, useRef } from "react"
 import { Editor, Frame, useEditor } from "@craftjs/core"
 import { X, Maximize2, Monitor, Smartphone, Tablet, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { ContainerNode } from "./nodes/ContainerNode"
-import { ButtonNode } from "./nodes/ButtonNode"
-import { TextNode } from "./nodes/TextNode"
-import { ImageNode } from "./nodes/ImageNode"
-import { InputNode } from "./nodes/InputNode"
-import { HeadingNode } from "./nodes/HeadingNode"
-import { CardNode } from "./nodes/CardNode"
-import { ModalNode } from "./nodes/ModalNode"
-import { NavigationNode } from "./nodes/NavigationNode"
-import { CheckboxNode } from "./nodes/CheckboxNode"
-import { SelectNode } from "./nodes/SelectNode"
-import { TextareaNode } from "./nodes/TextareaNode"
-import { DividerNode } from "./nodes/DividerNode"
-import { AvatarNode } from "./nodes/AvatarNode"
-import { BadgeNode } from "./nodes/BadgeNode"
-import { AlertNode } from "./nodes/AlertNode"
-import { RadioNode } from "./nodes/RadioNode"
-import { ToggleNode } from "./nodes/ToggleNode"
-import { DatePickerNode } from "./nodes/DatePickerNode"
-import { HeroTemplate } from "./templates/HeroTemplate"
-import { PricingTemplate } from "./templates/PricingTemplate"
-import { FooterTemplate } from "./templates/FooterTemplate"
-import { FeaturesGrid } from "./templates/FeaturesGrid"
-import { TestimonialTemplate } from "./templates/TestimonialTemplate"
+import { PREVIEW_RESOLVERS } from "@/lib/editorResolvers"
 
 type PreviewDevice = "desktop" | "tablet" | "mobile"
 
@@ -209,32 +186,7 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({ isOpen, onClose, jso
           {/* Rendered design */}
           <div className="min-h-[400px]">
             <Editor
-              resolver={{
-                ButtonNode,
-                ContainerNode,
-                TextNode,
-                ImageNode,
-                InputNode,
-                HeadingNode,
-                CardNode,
-                ModalNode,
-                NavigationNode,
-                CheckboxNode,
-                SelectNode,
-                TextareaNode,
-                DividerNode,
-                AvatarNode,
-                BadgeNode,
-                AlertNode,
-                RadioNode,
-                ToggleNode,
-                DatePickerNode,
-                HeroTemplate,
-                PricingTemplate,
-                FooterTemplate,
-                FeaturesGrid,
-                TestimonialTemplate,
-              }}
+              resolver={PREVIEW_RESOLVERS}
               enabled={false}
             >
               <Frame>

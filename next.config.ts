@@ -24,6 +24,35 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+
+  // ═══ Bundle optimization ═══════════════════════════════════════
+
+  // Compress output for faster loading (production only)
+  compress: isProd,
+
+  // Generate source maps in production for debugging (only in analyzer mode)
+  productionBrowserSourceMaps: process.env.ANALYZE === "true",
+
+  // Optimize server-side chunks (even though we use static export)
+  // This helps reduce the shared chunk size
+  experimental: {
+    // Optimize package imports for tree-shaking
+    optimizePackageImports: [
+      "lucide-react",
+      "@radix-ui/react-avatar",
+      "@radix-ui/react-dialog",
+      "@radix-ui/react-dropdown-menu",
+      "@radix-ui/react-tooltip",
+      "@radix-ui/react-tabs",
+      "@radix-ui/react-select",
+      "@radix-ui/react-toast",
+      "@radix-ui/react-checkbox",
+      "@radix-ui/react-switch",
+      "@radix-ui/react-radio-group",
+      "@ant-design/icons",
+      "@carbon/icons-react",
+    ],
+  },
 }
 
 export default nextConfig

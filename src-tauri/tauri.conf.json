@@ -35,5 +35,14 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ]
+  },
+  "plugins": {
+    "updater": {
+      "active": true,
+      "endpoints": [
+        "https://github.com/Rodolfotech/UI-DESKTOP/releases/latest/download/update-proxy.json"
+      ],
+      "pubkey": "mZTKZn3CithuXlvgFH8273bj1IDm+ywWtILA/DP4sHk="
+    }
   }
 }

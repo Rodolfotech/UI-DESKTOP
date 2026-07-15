@@ -2,14 +2,37 @@
 
 import dynamic from "next/dynamic"
 import React, { useState, useCallback, useRef } from "react"
-import { ExportModal } from "@/components/editor/ExportModal"
-import { PreviewModal } from "@/components/editor/PreviewModal"
-import { ProjectManagerModal } from "@/components/editor/ProjectManagerModal"
-import { DeployModal } from "@/components/editor/DeployModal"
-import { BackupModal } from "@/components/editor/BackupModal"
 import { useAutoSave } from "@/hooks/useAutoSave"
 import { setActiveProject } from "@/lib/projectManager"
 import type { ViewMode } from "@/components/editor/TopBar"
+
+// ── Dynamic imports — modals are heavy (craftjs, nodes, templates, jszip, icons)
+// They're loaded lazily only when the user opens them.
+
+const ExportModal = dynamic(
+  () => import("@/components/editor/ExportModal").then((mod) => mod.ExportModal),
+  { ssr: false }
+)
+
+const PreviewModal = dynamic(
+  () => import("@/components/editor/PreviewModal").then((mod) => mod.PreviewModal),
+  { ssr: false }
+)
+
+const ProjectManagerModal = dynamic(
+  () => import("@/components/editor/ProjectManagerModal").then((mod) => mod.ProjectManagerModal),
+  { ssr: false }
+)
+
+const DeployModal = dynamic(
+  () => import("@/components/editor/DeployModal").then((mod) => mod.DeployModal),
+  { ssr: false }
+)
+
+const BackupModal = dynamic(
+  () => import("@/components/editor/BackupModal").then((mod) => mod.BackupModal),
+  { ssr: false }
+)
 
 // Dynamically import the editor (with TopBar inside) to avoid SSR issues with Craft.js
 const EditorArea = dynamic(() => import("@/components/editor/EditorArea").then((mod) => mod.EditorArea), {
