@@ -14,8 +14,6 @@ import {
   Redo2, 
   Layers,
   Grid3X3,
-  ZoomIn,
-  ZoomOut,
   GripVertical,
   Smartphone,
   Tablet,
@@ -23,15 +21,18 @@ import {
   ChevronDown,
   Copy,
   Clipboard,
-  CopyPlus
+  CopyPlus,
+  Minus
 } from "lucide-react"
 
 import { ViewMode } from "./TopBar"
 import { HistoryDropdown } from "./HistoryDropdown"
 import type { HistoryEntry } from "@/hooks/useHistoryTracker"
+import { useSmartGuides } from "@/hooks/useSmartGuides"
 
 interface CanvasProps {
   className?: string
+  zoom?: number
   viewMode?: ViewMode
   onViewModeChange?: (mode: ViewMode) => void
   // Clipboard
@@ -83,6 +84,7 @@ function snapToBreakpoint(width: number): ViewMode {
 
 export const Canvas: React.FC<CanvasProps> = ({ 
   className, 
+  zoom = 100,
   viewMode = "desktop", 
   onViewModeChange,
   onCopy,
@@ -107,10 +109,71 @@ export const Canvas: React.FC<CanvasProps> = ({
     onHistoryNavigate?.(index, () => undo(), () => redo())
   }, [onHistoryNavigate, undo, redo])
 
-  const [zoom, setZoom] = React.useState(100)
-  const [showGrid, setShowGrid] = React.useState(false)
+  const [showGrid, setShowGrid] = React.useState(true)
   const [showDevicePicker, setShowDevicePicker] = React.useState(false)
   const devicePickerRef = React.useRef<HTMLDivElement>(null)
+
+  // ── Smart alignment guides (FASE 3.3) ────────────────────
+  const { guides, calculateGuides, clearGuides } = useSmartGuides()
+
+  // Track drag for guide calculation
+  const isDraggingComponent = useRef(false)
+
+  // Observe position changes during drag
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) return
+
+    const observer = new MutationObserver(() => {
+      if (isDraggingComponent.current && containerRef.current) {
+        // Use Craft.js selected class to find dragged element
+        const selectedEl = containerRef.current.querySelector('[class*="selected"]')
+        if (selectedEl) {
+          const rect = selectedEl.getBoundingClientRect()
+          calculateGuides(rect, containerRef.current)
+        }
+      }
+    })
+
+    observer.observe(container, {
+      attributes: true,
+      childList: true,
+      subtree: true,
+      attributeFilter: ['style', 'class'],
+    })
+
+    // Listen for drag start/end
+    const handleDragStart = () => { isDraggingComponent.current = true }
+    const handleDragEnd = () => {
+      isDraggingComponent.current = false
+      setTimeout(() => clearGuides(), 100)
+    }
+    document.addEventListener('dragstart', handleDragStart)
+    document.addEventListener('dragend', handleDragEnd)
+    // Handle Craft.js internal pointer events
+    const handlePointerDown = (e: PointerEvent) => {
+      const target = e.target as HTMLElement
+      if (target.closest('[class*="craft"]') || target.closest('[draggable]')) {
+        isDraggingComponent.current = true
+      }
+    }
+    const handlePointerUp = () => {
+      setTimeout(() => {
+        isDraggingComponent.current = false
+        clearGuides()
+      }, 200)
+    }
+    document.addEventListener('pointerdown', handlePointerDown)
+    document.addEventListener('pointerup', handlePointerUp)
+
+    return () => {
+      observer.disconnect()
+      document.removeEventListener('dragstart', handleDragStart)
+      document.removeEventListener('dragend', handleDragEnd)
+      document.removeEventListener('pointerdown', handlePointerDown)
+      document.removeEventListener('pointerup', handlePointerUp)
+    }
+  }, [calculateGuides, clearGuides])
 
   // Drag resize state using refs to avoid stale closures
   const [isDragging, setIsDragging] = useState(false)
@@ -258,26 +321,10 @@ export const Canvas: React.FC<CanvasProps> = ({
                 ? "bg-blue-100 text-blue-700" 
                 : "hover:bg-gray-100 text-gray-700"
             )}
-            title="Toggle Grid"
+            title="Toggle Grid (dot grid)"
           >
-            <Grid3X3 size={18} />
+            {showGrid ? <Grid3X3 size={18} /> : <Minus size={18} />}
           </button>
-
-          <div className="flex items-center gap-1 ml-2">
-            <button
-              onClick={() => setZoom(Math.max(50, zoom - 10))}
-              className="p-1 hover:bg-gray-100 rounded text-gray-600"
-            >
-              <ZoomOut size={16} />
-            </button>
-            <span className="text-sm text-gray-600 w-12 text-center">{zoom}%</span>
-            <button
-              onClick={() => setZoom(Math.min(200, zoom + 10))}
-              className="p-1 hover:bg-gray-100 rounded text-gray-600"
-            >
-              <ZoomIn size={16} />
-            </button>
-          </div>
 
           {/* Device Preset Picker */}
           <div className="relative ml-2" ref={devicePickerRef}>
@@ -375,14 +422,13 @@ export const Canvas: React.FC<CanvasProps> = ({
       {/* Canvas Area — with CSS containment for performance isolation */}
       <div 
         ref={containerRef}
-        className="flex-1 overflow-auto p-8 relative"
+        className={cn(
+          "flex-1 overflow-auto p-8 relative",
+          showGrid && "canvas-dot-grid"
+        )}
         style={{
           contain: "layout style paint",
           contentVisibility: "auto",
-          backgroundImage: showGrid 
-            ? "radial-gradient(circle, #d1d5db 1px, transparent 1px)"
-            : "none",
-          backgroundSize: showGrid ? "20px 20px" : "auto",
         }}
       >
         <div 
@@ -412,15 +458,16 @@ export const Canvas: React.FC<CanvasProps> = ({
             )} />
           </div>
 
-          {/* Canvas Frame */}
+          {/* Canvas Frame — Figma-style elevated artboard */}
           <div 
             ref={canvasRef}
             className={cn(
               "bg-white min-h-[600px] relative",
               !isDragging && "transition-all duration-300",
+              "canvas-artboard-shadow canvas-artboard-border canvas-viewport-transition",
               viewMode === "mobile" && "rounded-[26px]",
               viewMode === "tablet" && "rounded-[12px]",
-              viewMode === "desktop" && "rounded-xl shadow-lg"
+              viewMode === "desktop" && "rounded-xl"
             )}
             style={{ 
               width: activeWidth,
@@ -498,6 +545,28 @@ export const Canvas: React.FC<CanvasProps> = ({
                   )
                 })}
               </div>
+            )}
+
+            {/* Smart alignment guides overlay */}
+            {guides.length > 0 && (
+              <svg
+                className="absolute inset-0 pointer-events-none z-50"
+                style={{ width: activeWidth, height: '100%', left: 0, top: 0 }}
+              >
+                {guides.map((guide, i) => (
+                  <line
+                    key={i}
+                    x1={guide.orientation === "vertical" ? guide.position : guide.start}
+                    y1={guide.orientation === "horizontal" ? guide.position : guide.start}
+                    x2={guide.orientation === "vertical" ? guide.position : guide.end}
+                    y2={guide.orientation === "horizontal" ? guide.position : guide.end}
+                    stroke="#3b82f6"
+                    strokeWidth={1}
+                    strokeDasharray="4 2"
+                    opacity={0.8}
+                  />
+                ))}
+              </svg>
             )}
 
             <Frame>

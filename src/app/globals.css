@@ -109,6 +109,110 @@ body {
   outline-offset: 2px;
 }
 
+/* ── Figma-style dot grid for Canvas workspace ──────── */
+
+.canvas-dot-grid {
+  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.10) 1.2px, transparent 1.2px);
+  background-size: 24px 24px;
+}
+
+.dark .canvas-dot-grid {
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.07) 1.2px, transparent 1.2px);
+  background-size: 24px 24px;
+}
+
+/* LayerTree hover highlight on Canvas */
+.layer-hover-highlight {
+  outline: 2px solid #3b82f6 !important;
+  outline-offset: 2px !important;
+  background-color: rgba(59, 130, 246, 0.04) !important;
+  border-radius: 4px;
+}
+
+/* LayerTree Drag & Drop indicators */
+.tree-node-drop-before {
+  box-shadow: inset 0 2px 0 0 #3b82f6;
+  border-radius: 4px;
+}
+
+.tree-node-drop-after {
+  box-shadow: inset 0 -2px 0 0 #3b82f6;
+  border-radius: 4px;
+}
+
+/* ── Figma-style artboard shadow — elevated panel effect ── */
+
+.canvas-artboard-shadow {
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 4px 12px rgba(0, 0, 0, 0.06),
+    0 12px 32px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.3s ease;
+}
+
+.dark .canvas-artboard-shadow {
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.2),
+    0 4px 12px rgba(0, 0, 0, 0.3),
+    0 12px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* ── Artboard border ring (visible edge) ── */
+.canvas-artboard-border {
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.dark .canvas-artboard-border {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ── Smart alignment guides ── */
+.smart-guide {
+  position: absolute;
+  pointer-events: none;
+  z-index: 999;
+  background: #3b82f6;
+}
+
+.smart-guide-horizontal {
+  height: 1px;
+  left: 0;
+  right: 0;
+}
+
+.smart-guide-vertical {
+  width: 1px;
+  top: 0;
+  bottom: 0;
+}
+
+/* ── Artboard hover elevation lift ── */
+.canvas-artboard-wrapper:hover .canvas-artboard-shadow {
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 8px 24px rgba(0, 0, 0, 0.08),
+    0 20px 48px rgba(0, 0, 0, 0.12);
+}
+
+.dark .canvas-artboard-wrapper:hover .canvas-artboard-shadow {
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.2),
+    0 8px 24px rgba(0, 0, 0, 0.35),
+    0 20px 48px rgba(0, 0, 0, 0.45);
+}
+
+/* ── Canvas zoom/viewport transition ── */
+.canvas-viewport-transition {
+  transition: transform 0.2s ease, width 0.3s ease;
+}
+
+/* ── Live Code syntax highlighting ── */
+.code-tag { color: #7dd3fc; }
+.code-attr { color: #a5b4fc; }
+.code-string { color: #86efac; }
+.code-expression { color: #fde68a; }
+.code-comment { color: #6b7280; font-style: italic; }
+
 /* Animation Styles */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-10px); }

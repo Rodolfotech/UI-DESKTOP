@@ -14,6 +14,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+      </head>
       <body className="bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-colors">
         <ThemeProvider>{children}</ThemeProvider>
       </body>

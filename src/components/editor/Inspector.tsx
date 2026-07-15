@@ -10,10 +10,13 @@ import {
   Layers,
   Info,
   Component,
-  Blocks
+  Blocks,
+  Paintbrush
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { getDSSettings } from "@/lib/designSystems/settingsRegistry"
+import { StylePanel } from "./StylePanel"
+import { LiveCodePanel } from "./LiveCodePanel"
 import { ButtonNodeSettings } from "./nodes/ButtonNode"
 import { ContainerNodeSettings } from "./nodes/ContainerNode"
 import { TextNodeSettings } from "./nodes/TextNode"
@@ -190,6 +193,8 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ nodeName, resolvedName })
 }
 
 export const Inspector: React.FC = () => {
+  const [inspectorTab, setInspectorTab] = React.useState<"props" | "styles">("props")
+
   const { selectedNodeId, actions, name, resolvedName } = useEditor((state, query) => {
     const currentNodeId = [...state.events.selected][0]
     let nodeName = ''
@@ -308,15 +313,51 @@ export const Inspector: React.FC = () => {
 
   return (
     <div className="w-80 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 h-full overflow-y-auto transition-colors">
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 transition-colors">
-        <div className="flex items-center gap-2">
-          <Settings size={20} className="text-gray-600" />
-          <h2 className="font-semibold text-gray-900">Inspector</h2>
+      {/* Header with tabs */}
+      <div className="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 transition-colors">
+        <div className="px-4 py-3">
+          <div className="flex items-center gap-2">
+            <Settings size={18} className="text-gray-600" />
+            <h2 className="font-semibold text-gray-900 dark:text-white text-sm">Inspector</h2>
+          </div>
+          <p className="text-xs text-gray-500 mt-0.5">
+            {selectedNodeId ? "Edit selected component" : "Select a component to edit"}
+          </p>
         </div>
-        <p className="text-xs text-gray-500 mt-1">
-          {selectedNodeId ? "Edit selected component" : "Select a component to edit"}
-        </p>
+
+        {/* Tabs: Props | Styles */}
+        <div className="flex border-t border-gray-200 dark:border-gray-700">
+          <button
+            onClick={() => setInspectorTab("props")}
+            className={cn(
+              "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors relative",
+              inspectorTab === "props"
+                ? "text-blue-600 dark:text-blue-400"
+                : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+            )}
+          >
+            <Settings size={14} />
+            <span>Props</span>
+            {inspectorTab === "props" && (
+              <div className="absolute bottom-0 left-2 right-2 h-0.5 bg-blue-500 rounded-full" />
+            )}
+          </button>
+          <button
+            onClick={() => setInspectorTab("styles")}
+            className={cn(
+              "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors relative",
+              inspectorTab === "styles"
+                ? "text-blue-600 dark:text-blue-400"
+                : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+            )}
+          >
+            <Paintbrush size={14} />
+            <span>Styles</span>
+            {inspectorTab === "styles" && (
+              <div className="absolute bottom-0 left-2 right-2 h-0.5 bg-blue-500 rounded-full" />
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Canvas Statistics */}
@@ -385,13 +426,45 @@ export const Inspector: React.FC = () => {
           {/* Selected Node Header */}
           <SelectedNode nodeId={selectedNodeId} />
 
-          {/* Settings Section */}
+          {/* Tab Content: Props or Styles */}
           <div className="px-4 py-3">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-1 h-4 bg-blue-600 rounded-full" />
-              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Properties</h3>
+            {inspectorTab === "props" ? (
+              <>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-1 h-4 bg-blue-600 rounded-full" />
+                  <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Component Props</h3>
+                </div>
+                <SettingsPanel nodeName={name} resolvedName={resolvedName} />
+              </>
+            ) : (
+              <>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-1 h-4 bg-purple-600 rounded-full" />
+                  <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Tailwind Styles</h3>
+                </div>
+                <StylePanel />
+              </>
+            )}
+          </div>
+
+          {/* Quick Actions */}
+          <div className="border-t border-gray-200 dark:border-gray-700 px-4 py-3">
+            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Quick Actions</h3>
+            <div className="space-y-2">
+              <button
+                onClick={() => actions.history.undo()}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                <span>Undo Last Change</span>
+              </button>
+              <button
+                onClick={() => actions.delete(selectedNodeId)}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+              >
+                <Trash2 size={14} />
+                <span>Delete Component</span>
+              </button>
             </div>
-            <SettingsPanel nodeName={name} resolvedName={resolvedName} />
           </div>
         </div>
       ) : (
@@ -406,35 +479,8 @@ export const Inspector: React.FC = () => {
         </div>
       )}
 
-      {/* Quick Actions */}
-      {selectedNodeId && (
-        <div className="border-t border-gray-200 dark:border-gray-700 px-4 py-3">
-          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Quick Actions</h3>
-          <div className="space-y-2">
-            <button
-              onClick={() => {
-                if (selectedNodeId) {
-                  actions.history.undo()
-                }
-              }}
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-            >
-              <span>Undo Last Change</span>
-            </button>
-            <button
-              onClick={() => {
-                if (selectedNodeId) {
-                  actions.delete(selectedNodeId)
-                }
-              }}
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-            >
-              <Trash2 size={14} />
-              <span>Delete Component</span>
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Live Code Panel — bottom of inspector */}
+      <LiveCodePanel />
     </div>
   )
 }
