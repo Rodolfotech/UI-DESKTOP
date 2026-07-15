@@ -3,13 +3,16 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo } from "react"
 import { Editor } from "@craftjs/core"
 import type { UserComponent } from "@craftjs/core"
+import { cn } from "@/lib/utils"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 import { TopBar } from "./TopBar"
-import { Palette } from "./Palette"
+import { LeftPanel } from "./LeftPanel"
 import { Canvas } from "./Canvas"
 import { Inspector } from "./Inspector"
 import { EditorLoader } from "./EditorLoader"
 import { useHistoryTracker } from "@/hooks/useHistoryTracker"
 import { useClipboard } from "@/hooks/useClipboard"
+import { useProjectName } from "@/hooks/useProjectName"
 import { ClipboardToast } from "@/components/editor/ClipboardToast"
 import { ensureDefaultProject, saveProject, autoSaveSnapshot } from "@/lib/projectManager"
 import type { ViewMode } from "./TopBar"
@@ -149,6 +152,8 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
   lastSaved,
   hasUnsavedChanges,
 }) => {
+  const { projectName } = useProjectName()
+
   const projectIdRef = useRef<number | null>(null)
   const initializedRef = useRef(false)
   const lastSnapshotRef = useRef<string>('')
@@ -206,6 +211,9 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
     }
   }, [])
 
+  // ── Zoom State (shared between TopBar and Canvas) ─────────────
+  const [zoom, setZoom] = useState(100)
+
   const [dsResolvers, setDsResolvers] = useState<Record<string, UserComponent>>({})
   const [activeDS, setActiveDSState] = useState<string | null>(null)
   const [dsLoading, setDsLoading] = useState(false)
@@ -248,6 +256,65 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
     [dsResolvers],
   )
 
+  // ── Responsive Panel State (FASE 5.4) ─────────────────────────
+  const getInitialPanelState = (key: 'left' | 'right'): boolean => {
+    if (typeof window === 'undefined') return true
+    try {
+      const stored = localStorage.getItem('proyect-ui-panels')
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        if (typeof parsed[key] === 'boolean') return parsed[key]
+      }
+    } catch { /* ignore */ }
+    return true
+  }
+
+  const [leftPanelVisible, setLeftPanelVisible] = useState(() => getInitialPanelState('left'))
+  const [rightPanelVisible, setRightPanelVisible] = useState(() => getInitialPanelState('right'))
+
+  // Persist panel state to localStorage
+  const savePanelState = useCallback((left: boolean, right: boolean) => {
+    try {
+      localStorage.setItem('proyect-ui-panels', JSON.stringify({ left, right }))
+    } catch { /* ignore */ }
+  }, [])
+
+  // Save when panel state changes
+  useEffect(() => {
+    savePanelState(leftPanelVisible, rightPanelVisible)
+  }, [leftPanelVisible, rightPanelVisible, savePanelState])
+
+  // Responsive auto-collapse on initial viewport only (respects user preference after that)
+  useEffect(() => {
+    const width = window.innerWidth
+    if (width < 1024) {
+      setLeftPanelVisible(false)
+      setRightPanelVisible(false)
+    } else if (width < 1280) {
+      setRightPanelVisible(false)
+    }
+  }, [])
+
+  // Keyboard shortcut: toggle panels with Ctrl+B (left) and Ctrl+I (right)
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      // Ignore if user is typing in an input/textarea
+      const tag = document.activeElement?.tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
+
+      if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+        e.preventDefault()
+        setLeftPanelVisible(prev => !prev)
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'i') {
+        e.preventDefault()
+        setRightPanelVisible(prev => !prev)
+      }
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [])
+
   // ── History State ────────────────────────────────────────────────
 
   // Initialize the project in the database on mount
@@ -266,7 +333,7 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
   }, [])
 
   return (
-    <div className="h-full flex flex-col bg-white dark:bg-gray-950 transition-colors">
+    <div className="h-full flex flex-col bg-white dark:bg-gray-950 transition-colors animate-fade-in">
       <Editor
         resolver={allResolvers}
         onNodesChange={(query) => {
@@ -289,6 +356,9 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
         }}
       >
         <TopBar
+          projectName={projectName}
+          zoom={zoom}
+          onZoomChange={setZoom}
           onExportCode={onExportCode}
           onSave={onSaveClick}
           onClear={onClear}
@@ -303,13 +373,40 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
           onViewModeChange={onViewModeChange}
         />
         <div className="flex-1 flex overflow-hidden">
-          <Palette
-            activeDS={activeDS}
-            onSelectDS={handleSelectDS}
-            dsLoading={dsLoading}
-            dsComponentMap={dsResolvers}
-          />
+          {/* Left Panel — collapsible */}
+          <div className={cn(
+            "transition-all duration-300 ease-in-out overflow-hidden shrink-0",
+            leftPanelVisible ? "w-72 opacity-100" : "w-0 opacity-0"
+          )}>
+            <LeftPanel
+              activeDS={activeDS}
+              onSelectDS={handleSelectDS}
+              dsLoading={dsLoading}
+              dsComponentMap={dsResolvers}
+            />
+          </div>
+
+          {/* Left Panel Toggle */}
+          <div
+            className="relative flex items-center"
+            onClick={() => setLeftPanelVisible(prev => !prev)}
+          >
+            <div className={cn(
+              "w-4 h-full flex items-center justify-center cursor-pointer group transition-colors",
+              "hover:bg-blue-50 dark:hover:bg-blue-900/20",
+              "border-r border-gray-200 dark:border-gray-700",
+              "bg-gray-50/50 dark:bg-gray-800/50",
+              leftPanelVisible ? "opacity-100" : "opacity-60 hover:opacity-100"
+            )}>
+              <ChevronLeft size={12} className={cn(
+                "text-gray-400 group-hover:text-blue-500 transition-transform duration-300",
+                !leftPanelVisible && "rotate-180"
+              )} />
+            </div>
+          </div>
+
           <Canvas
+            zoom={zoom}
             viewMode={viewMode}
             onViewModeChange={onViewModeChange}
             onCopy={copySelected}
@@ -322,7 +419,34 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
             onHistoryClose={onHistoryClose}
             onHistoryNavigate={onHistoryNavigate}
           />
-          <Inspector />
+
+          {/* Right Panel Toggle */}
+          <div
+            className="relative flex items-center"
+            onClick={() => setRightPanelVisible(prev => !prev)}
+          >
+            <div className={cn(
+              "w-4 h-full flex items-center justify-center cursor-pointer group transition-colors",
+              "hover:bg-blue-50 dark:hover:bg-blue-900/20",
+              "border-l border-gray-200 dark:border-gray-700",
+              "bg-gray-50/50 dark:bg-gray-800/50",
+              rightPanelVisible ? "opacity-100" : "opacity-60 hover:opacity-100"
+            )}>
+              <ChevronRight size={12} className={cn(
+                "text-gray-400 group-hover:text-blue-500 transition-transform duration-300",
+                !rightPanelVisible && "rotate-180"
+              )} />
+            </div>
+          </div>
+
+          {/* Right Panel — collapsible */}
+          <div className={cn(
+            "transition-all duration-300 ease-in-out overflow-hidden shrink-0",
+            rightPanelVisible ? "w-80 opacity-100" : "w-0 opacity-0"
+          )}>
+            <Inspector />
+          </div>
+
           <KeyboardShortcuts onHistoryToggle={onHistoryToggle} />
         </div>
         <ClipboardManager apiRef={clipboardApiRef} />

@@ -336,3 +336,10 @@ Privado — Proyecto interno de maquetación visual.
 ---
 
 > Documentación generada el Julio 2026. Ver `plan_r1.md` para el roadmap completo y `AGENT.md` para la visión del proyecto.
+
+
+freebuff
+
+npx serve out -p 3000
+
+npm run dev
