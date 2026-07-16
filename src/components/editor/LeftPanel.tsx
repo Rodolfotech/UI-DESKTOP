@@ -99,6 +99,7 @@ interface LeftPanelProps {
   onSelectDS?: (dsId: string | null) => void
   dsLoading?: boolean
   dsComponentMap?: Record<string, UserComponent>
+  dsPlugins?: ReturnType<typeof getPluginOptions>
 }
 
 type TabId = "components" | "layers"
@@ -386,13 +387,13 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
   onSelectDS,
   dsLoading = false,
   dsComponentMap = {},
+  dsPlugins = [],
 }) => {
   const [activeTab, setActiveTab] = useState<TabId>("components")
   const [showDSPicker, setShowDSPicker] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const searchInputRef = useRef<HTMLInputElement>(null)
 
-  const dsPlugins = React.useMemo(() => getPluginOptions(), [])
   const activePlugin = useMemo(() => activeDS ? designSystemRegistry.get(activeDS) : null, [activeDS])
   const dsComponents = useMemo(() => activeDS ? designSystemRegistry.getActiveComponents() : [], [activeDS])
 

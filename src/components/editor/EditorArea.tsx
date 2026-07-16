@@ -16,45 +16,9 @@ import { useProjectName } from "@/hooks/useProjectName"
 import { ClipboardToast } from "@/components/editor/ClipboardToast"
 import { ensureDefaultProject, saveProject, autoSaveSnapshot } from "@/lib/projectManager"
 import type { ViewMode } from "./TopBar"
-import { ContainerNode } from "./nodes/ContainerNode"
-import { ButtonNode } from "./nodes/ButtonNode"
-import { TextNode } from "./nodes/TextNode"
-import { ImageNode } from "./nodes/ImageNode"
-import { InputNode } from "./nodes/InputNode"
-import { HeadingNode } from "./nodes/HeadingNode"
-import { CardNode } from "./nodes/CardNode"
-import { ModalNode } from "./nodes/ModalNode"
-import { NavigationNode } from "./nodes/NavigationNode"
-import { CheckboxNode } from "./nodes/CheckboxNode"
-import { SelectNode } from "./nodes/SelectNode"
-import { TextareaNode } from "./nodes/TextareaNode"
-import { DividerNode } from "./nodes/DividerNode"
-import { AvatarNode } from "./nodes/AvatarNode"
-import { BadgeNode } from "./nodes/BadgeNode"
-import { AlertNode } from "./nodes/AlertNode"
-import { RadioNode } from "./nodes/RadioNode"
-import { ToggleNode } from "./nodes/ToggleNode"
-import { DatePickerNode } from "./nodes/DatePickerNode"
-import { HeroTemplate } from "./templates/HeroTemplate"
-import { PricingTemplate } from "./templates/PricingTemplate"
-import { FooterTemplate } from "./templates/FooterTemplate"
-import { FeaturesGrid } from "./templates/FeaturesGrid"
-import { TestimonialTemplate } from "./templates/TestimonialTemplate"
-import { LoginForm } from "./templates/LoginForm"
-import { ContactForm } from "./templates/ContactForm"
-import { TableOfContents } from "./templates/TableOfContents"
-import { FAQSection } from "./templates/FAQSection"
-import { TeamGrid } from "./templates/TeamGrid"
-import { PricingTableDetailed } from "./templates/PricingTableDetailed"
-import { StatsCounter } from "./templates/StatsCounter"
-import { NewsletterSection } from "./templates/NewsletterSection"
-import { CookieConsentBanner } from "./templates/CookieConsentBanner"
-import { TimelineSection } from "./templates/TimelineSection"
-import { LogoCloud } from "./templates/LogoCloud"
-import { CTASection } from "./templates/CTASection"
-import { PortfolioGrid } from "./templates/PortfolioGrid"
+import { NATIVE_RESOLVERS } from "@/lib/editorResolvers"
 import { KeyboardShortcuts } from "./KeyboardShortcuts"
-import { registerAllPlugins, loadPluginResolvers } from "@/lib/designSystems/loader"
+import { registerAllPlugins, loadPluginResolvers, getPluginOptions } from "@/lib/designSystems/loader"
 import { designSystemRegistry } from "@/lib/designSystems/registry"
 
 // ── Clipboard Manager (lives INSIDE <Editor> context) ───────────────
@@ -79,48 +43,6 @@ const ClipboardManager: React.FC<{
   }
 
   return <ClipboardToast feedback={feedback} onDone={clearFeedback} />
-}
-
-// ── Native Resolvers (built-in components) ───────────────────────────
-
-const NATIVE_RESOLVERS: Record<string, UserComponent> = {
-  ButtonNode,
-  ContainerNode,
-  TextNode,
-  ImageNode,
-  InputNode,
-  HeadingNode,
-  CardNode,
-  ModalNode,
-  NavigationNode,
-  CheckboxNode,
-  SelectNode,
-  TextareaNode,
-  DividerNode,
-  AvatarNode,
-  BadgeNode,
-  AlertNode,
-  RadioNode,
-  ToggleNode,
-  DatePickerNode,
-  HeroTemplate,
-  PricingTemplate,
-  FooterTemplate,
-  FeaturesGrid,
-  TestimonialTemplate,
-  LoginForm,
-  ContactForm,
-  TableOfContents,
-  FAQSection,
-  TeamGrid,
-  PricingTableDetailed,
-  StatsCounter,
-  NewsletterSection,
-  CookieConsentBanner,
-  TimelineSection,
-  LogoCloud,
-  CTASection,
-  PortfolioGrid,
 }
 
 interface EditorAreaProps {
@@ -217,12 +139,15 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
   const [dsResolvers, setDsResolvers] = useState<Record<string, UserComponent>>({})
   const [activeDS, setActiveDSState] = useState<string | null>(null)
   const [dsLoading, setDsLoading] = useState(false)
+  const [dsPlugins, setDsPlugins] = useState<ReturnType<typeof getPluginOptions>>([])
 
   // Register all DS plugins on mount
   useEffect(() => {
-    registerAllPlugins().catch((err) =>
-      console.error("[EditorArea] Failed to register DS plugins:", err)
-    )
+    registerAllPlugins()
+      .then(() => setDsPlugins(getPluginOptions()))
+      .catch((err) =>
+        console.error("[EditorArea] Failed to register DS plugins:", err)
+      )
   }, [])
 
   // Handle DS selection: load adapters and update resolvers
@@ -383,6 +308,7 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
               onSelectDS={handleSelectDS}
               dsLoading={dsLoading}
               dsComponentMap={dsResolvers}
+              dsPlugins={dsPlugins}
             />
           </div>
 

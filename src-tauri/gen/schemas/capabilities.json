@@ -1,1 +1,1 @@
-{"default":{"identifier":"default","description":"Default capabilities for Proyect-UI","local":true,"windows":["main"],"permissions":["core:default","sql:default","sql:allow-load","sql:allow-execute","sql:allow-select"]}}
+{"default":{"identifier":"default","description":"Default capabilities for Proyect-UI","local":true,"windows":["main"],"permissions":["core:default","sql:default","sql:allow-load","sql:allow-execute","sql:allow-select","updater:default","updater:allow-check","updater:allow-download-and-install"]}}
